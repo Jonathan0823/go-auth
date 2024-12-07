@@ -3,11 +3,10 @@ package user
 import (
 	"database/sql"
 	"go-auth/internal/models"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserRepository interface {
+	GetAllUsers() ([]models.User, error)
 	GetUserByID(id int) (*models.User, error)
 	GetUserByEmail(email string) (*models.User, error)
 	UpdateUser(user *models.User) error
@@ -22,6 +21,26 @@ func NewUserRepository(db *sql.DB) *userrepository {
 	return &userrepository{
 		db: db,
 	}
+}
+
+func (r *userrepository) GetAllUsers() ([]models.User, error) {
+	var users []models.User
+	query := `SELECT * FROM users`
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var user models.User
+		err := rows.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
 }
 
 func (r *userrepository) GetUserByID(id int) (*models.User, error) {
@@ -56,20 +75,6 @@ func (r *userrepository) UpdateUser(user *models.User) error {
 	return nil
 }
 
-func (r *userrepository) UpdatePassword(id int, password string) error {
-	query := `UPDATE users SET password = $1 WHERE id = $2`
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-
-	_, err = r.db.Exec(query, hashedPassword, id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 func (r *userrepository) DeleteUser(id int) error {
 	query := `DELETE FROM users WHERE id = $1`
@@ -80,4 +85,3 @@ func (r *userrepository) DeleteUser(id int) error {
 	}
 	return nil
 }
-

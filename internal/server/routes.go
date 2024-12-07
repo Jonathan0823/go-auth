@@ -44,6 +44,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	userGroup := apiGroup.Group("/user")
 	{
 		userGroup.GET("/", userHandler.GetUser)
+		userGroup.GET("/all", userHandler.GetAllUsers)
 	}
 
 	return r

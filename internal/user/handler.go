@@ -18,6 +18,11 @@ func NewUserHandler(svc UserService) *userhandler {
 	}
 }
 
+func (h *userhandler) GetAllUsers(c *gin.Context) {
+	users, _ := h.svc.GetAllUsers()
+	c.JSON(http.StatusOK, users)
+}
+
 func (h *userhandler) GetUser(c *gin.Context) {
 	id := c.Query("id")
 	email := c.Query("email")
