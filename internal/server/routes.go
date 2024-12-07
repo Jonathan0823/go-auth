@@ -2,6 +2,7 @@ package server
 
 import (
 	"go-auth/internal/auth"
+	"go-auth/internal/middleware"
 	"go-auth/internal/user"
 	"net/http"
 
@@ -38,13 +39,14 @@ func (s *Server) RegisterRoutes() http.Handler {
 	authGroup := apiGroup.Group("/auth")
 	{
 		authGroup.POST("/register", authHandler.Register)
+		authGroup.POST("/login", authHandler.Login)
 	}
 
 	// User routes
 	userGroup := apiGroup.Group("/user")
 	{
 		userGroup.GET("/", userHandler.GetUser)
-		userGroup.GET("/all", userHandler.GetAllUsers)
+		userGroup.GET("/all", middleware.JWTMiddleware(authSvc), userHandler.GetAllUsers)
 	}
 
 	return r

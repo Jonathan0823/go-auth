@@ -33,7 +33,7 @@ func (r *authrepository) Validate(email, password string) (bool, error) {
 
 	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err != nil {
-		return false, err
+		return false, nil
 	}
 	return true, nil
 }
