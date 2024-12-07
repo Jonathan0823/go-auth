@@ -10,11 +10,8 @@ import (
 type UserRepository interface {
 	GetUserByID(id int) (*models.User, error)
 	GetUserByEmail(email string) (*models.User, error)
-	CreateUser(user *models.User) error
 	UpdateUser(user *models.User) error
-	UpdatePassword(id int, password string) error
 	DeleteUser(id int) error
-	VerifyUser(email, password string) (*models.User, error)
 }
 
 type userrepository struct {
@@ -47,20 +44,7 @@ func (r *userrepository) GetUserByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
-func (r *userrepository) CreateUser(user *models.User) error {
-	query := `INSERT INTO users (username, email, password) VALUES ($1, $2, $3)`
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-
-	_, err = r.db.Exec(query, user.Username, user.Email, hashedPassword)
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 func (r *userrepository) UpdateUser(user *models.User) error {
 	query := `UPDATE users SET username = $1, email = $2, WHERE id = $3`
@@ -97,16 +81,3 @@ func (r *userrepository) DeleteUser(id int) error {
 	return nil
 }
 
-func (r *userrepository) VerifyUser(email, password string) (*models.User, error) {
-	user, err := r.GetUserByEmail(email)
-	if err != nil {
-		return nil, err
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
-}

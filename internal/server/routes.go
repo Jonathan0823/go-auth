@@ -1,6 +1,8 @@
 package server
 
 import (
+	"go-auth/internal/auth"
+	"go-auth/internal/user"
 	"net/http"
 
 	"github.com/gin-contrib/cors"
@@ -17,9 +19,32 @@ func (s *Server) RegisterRoutes() http.Handler {
 		AllowCredentials: true, // Enable cookies/auth
 	}))
 
+	userRepo := user.NewUserRepository(s.db.GetDB())
+	authRepo := auth.NewAuthRepository(s.db.GetDB())
+
+	userSvc := user.NewUserService(userRepo)
+	authSvc := auth.NewAuthService(authRepo)
+
+	userHandler := user.NewUserHandler(userSvc)
+	authHandler := auth.NewAuthHandler(authSvc)
+
 	r.GET("/", s.HelloWorldHandler)
 
 	r.GET("/health", s.healthHandler)
+
+	apiGroup := r.Group("/api")
+
+	// Auth routes
+	authGroup := apiGroup.Group("/auth")
+	{
+		authGroup.POST("/register", authHandler.Register)
+	}
+
+	// User routes
+	userGroup := apiGroup.Group("/user")
+	{
+		userGroup.GET("/", userHandler.GetUser)
+	}
 
 	return r
 }

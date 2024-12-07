@@ -22,6 +22,8 @@ type Service interface {
 	// Close terminates the database connection.
 	// It returns an error if the connection cannot be closed.
 	Close() error
+
+	GetDB() *sql.DB
 }
 
 type service struct {
@@ -117,6 +119,7 @@ func (s *service) AutoMigrate() error {
 	_, err := s.db.Exec(`
 		CREATE TABLE IF NOT EXISTS users (
 			id SERIAL PRIMARY KEY,
+			username VARCHAR(255) NOT NULL,
 			email VARCHAR(255) NOT NULL,
 			password VARCHAR(255) NOT NULL,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -128,6 +131,10 @@ func (s *service) AutoMigrate() error {
 	}
 
 	log.Printf("Auto migration completed")
-	
+
 	return nil
+}
+
+func (s *service) GetDB() *sql.DB {
+	return s.db
 }
