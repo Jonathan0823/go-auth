@@ -8,8 +8,8 @@ import (
 )
 
 type AuthRepository interface {
-	Login(email, password string) (string, error)
 	Register(user models.User) error
+	Validate(email, password string) (bool, error)
 }
 
 type authrepository struct {
@@ -22,8 +22,20 @@ func NewAuthRepository(db *sql.DB) *authrepository {
 	}
 }
 
-func (r *authrepository) Login(email, password string) (string, error) {
-	panic("not implemented") // TODO: Implement
+func (r *authrepository) Validate(email, password string) (bool, error) {
+	query := `SELECT password FROM users WHERE email = $1`
+
+	var hashedPassword string
+	err := r.db.QueryRow(query, email).Scan(&hashedPassword)
+	if err != nil {
+		return false, err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func (r *authrepository) Register(user models.User) error {
