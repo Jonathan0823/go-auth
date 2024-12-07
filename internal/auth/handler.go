@@ -51,5 +51,8 @@ func (h *authhandler) Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"token": token})
+
+	c.SetCookie("token", token, 3600 * 24, "/", "localhost:3000.com", false, true)
+
+	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully"})
 }
