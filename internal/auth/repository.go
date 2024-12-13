@@ -10,6 +10,7 @@ import (
 type AuthRepository interface {
 	Register(user models.User) error
 	Validate(email, password string) (bool, error)
+	IsUserExists(email string) (bool, error)
 }
 
 type authrepository struct {
@@ -51,4 +52,16 @@ func (r *authrepository) Register(user models.User) error {
 		return err
 	}
 	return nil
+}
+
+
+func (r *authrepository) IsUserExists(email string) (bool, error) {
+	query := `SELECT email FROM users WHERE email = $1`
+
+	var userEmail string
+	err := r.db.QueryRow(query, email).Scan(&userEmail)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }

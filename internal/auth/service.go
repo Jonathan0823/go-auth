@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"go-auth/internal/models"
 	"os"
 	"time"
@@ -25,6 +26,15 @@ func NewAuthService(repo AuthRepository) *authservice {
 }
 
 func (s *authservice) Register(user models.User) error {
+	isUserExist, err := s.repo.IsUserExists(user.Email)
+	if err != nil {
+		return err
+	}
+
+	if isUserExist {
+		return fmt.Errorf("user with email %s already exists", user.Email)
+	}
+
 	return s.repo.Register(user)
 }
 
