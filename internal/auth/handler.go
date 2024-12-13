@@ -52,7 +52,7 @@ func (h *authhandler) Login(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("token", token, 3600 * 24, "/", "localhost:3000.com", false, true)
+	c.SetCookie("token", token, 3600 * 24, "/", "localhost:3000", false, true)
 
 	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully"})
 }
