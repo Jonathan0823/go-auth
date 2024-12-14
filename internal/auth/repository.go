@@ -60,8 +60,5 @@ func (r *authrepository) IsUserExists(email string) (bool) {
 
 	var userEmail string
 	err := r.db.QueryRow(query, email).Scan(&userEmail)
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }
