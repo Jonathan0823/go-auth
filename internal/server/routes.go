@@ -40,7 +40,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	{
 		authGroup.POST("/register", authHandler.Register)
 		authGroup.POST("/login", authHandler.Login)
-		authGroup.POST("/session", middleware.JWTMiddleware(authSvc), authHandler.Session)
+		authGroup.GET("/session", middleware.JWTMiddleware(authSvc), authHandler.Session)
 	}
 
 	// User routes
