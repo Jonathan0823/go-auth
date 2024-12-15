@@ -30,7 +30,7 @@ func (s *authservice) Register(user models.User) error {
 	isUserExist := s.repo.IsUserExists(user.Email)
 
 	if isUserExist {
-		return fmt.Errorf("Email is already exists")
+		return fmt.Errorf("email is already exists")
 	}
 
 	return s.repo.Register(user)
