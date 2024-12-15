@@ -3,6 +3,7 @@ package middleware
 import (
 	"go-auth/internal/auth"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,12 +11,22 @@ import (
 func JWTMiddleware(svc auth.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Extract token from Authorization header
-		tokenString, err := c.Cookie("token")
-		if err != nil || tokenString == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization token required"})
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
 			c.Abort()
 			return
 		}
+
+		// Check if token starts with "Bearer " prefix
+		if !strings.HasPrefix(authHeader, "Bearer ") {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header must start with Bearer"})
+			c.Abort()
+			return
+		}
+
+		// Extract the token part (after "Bearer ")
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
 		// Validate the token using the AuthService
 		claims, err := svc.ValidateJWT(tokenString)

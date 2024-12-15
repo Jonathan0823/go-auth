@@ -3,6 +3,7 @@ package auth
 import (
 	"go-auth/internal/models"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -52,18 +53,20 @@ func (h *authhandler) Login(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("token", token, 3600*24, "/", "localhost:3000", false, true)
-
-	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully", "token": token})
 }
 
-func (h *authhandler) Session (c *gin.Context) {
-	token, err := c.Cookie("token")
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization token required"})
+func (h *authhandler) Session(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
+	if authHeader == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
 		return
 	}
-	claims, err := h.svc.ValidateJWT(token)
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header must start with Bearer"})
+		return
+	}
+	claims, err := h.svc.ValidateJWT(strings.TrimPrefix(authHeader, "Bearer "))
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
