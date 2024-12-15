@@ -13,6 +13,7 @@ type AuthService interface {
 	Register(user models.User) error
 	Validate(email, password string) (bool, error)
 	ValidateJWT(tokenString string) (jwt.MapClaims, error)
+	GenerateJWT(email string) (string, error)
 }
 
 type authservice struct {
@@ -37,11 +38,19 @@ func (s *authservice) Register(user models.User) error {
 
 var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
-func GenerateJWT(userID string) (string, error) {
+func (s *authservice) GenerateJWT(email string) (string, error) {
+
+	user, err := s.repo.GetUserByEmail(email)
+	if err != nil {
+		return "", err
+	}
+
 	// Define claims
 	claims := jwt.MapClaims{
-		"userID": userID,
-		"exp":    time.Now().Add(time.Hour * 24).Unix(), // Expires in 24 hours
+		"id":       user.ID,
+		"username": user.Username,
+		"email":    email,
+		"exp":      time.Now().Add(time.Hour * 24).Unix(), // Expires in 24 hours
 	}
 
 	// Create token with claims

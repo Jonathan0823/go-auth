@@ -46,7 +46,7 @@ func (h *authhandler) Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
-	token, err := GenerateJWT(user.Email)
+	token, err := h.svc.GenerateJWT(user.Email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
