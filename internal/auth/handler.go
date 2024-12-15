@@ -52,7 +52,21 @@ func (h *authhandler) Login(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("token", token, 3600 * 24, "/", "localhost:3000", false, true)
+	c.SetCookie("token", token, 3600*24, "/", "localhost:3000", false, true)
 
 	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully"})
+}
+
+func (h *authhandler) Session (c *gin.Context) {
+	token, err := c.Cookie("token")
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization token required"})
+		return
+	}
+	claims, err := h.svc.ValidateJWT(token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"claims": claims})
 }

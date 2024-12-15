@@ -65,10 +65,10 @@ func (r *authrepository) IsUserExists(email string) (bool) {
 }
 
 func (r *authrepository) GetUserByEmail(email string) (models.User, error) {
-	query := `SELECT username, email, password FROM users WHERE email = $1`
+	query := `SELECT id, username, email, password FROM users WHERE email = $1`
 
 	var user models.User
-	err := r.db.QueryRow(query, email).Scan(&user.Username, &user.Email, &user.Password)
+	err := r.db.QueryRow(query, email).Scan(&user.ID, &user.Username, &user.Email, &user.Password)
 	if err != nil {
 		return models.User{}, err
 	}
