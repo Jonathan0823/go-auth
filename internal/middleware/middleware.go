@@ -2,10 +2,12 @@ package middleware
 
 import (
 	"go-auth/internal/auth"
+	"go-auth/internal/models"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func JWTMiddleware(svc auth.AuthService) gin.HandlerFunc {
@@ -36,8 +38,15 @@ func JWTMiddleware(svc auth.AuthService) gin.HandlerFunc {
 			return
 		}
 
-		// Pass claims to the next handler
-		c.Set("claims", claims)
+		claimsMap := jwt.MapClaims(claims) 
+		
+		user:= models.SessionResponse{
+			ID: int(claimsMap["id"].(float64)),
+			Username: claimsMap["username"].(string),
+			Email: claimsMap["email"].(string),
+		}
+
+		c.Set("claims", user)
 		c.Next()
 	}
 }

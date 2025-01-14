@@ -4,8 +4,8 @@ import (
 	"go-auth/internal/models"
 	"net/http"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 )
+
 type authhandler struct {
 	svc AuthService
 }
@@ -62,17 +62,5 @@ func (h *authhandler) Session(c *gin.Context) {
 		return
 	}
 
-	claimsMap, ok := claims.(jwt.MapClaims)
-	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
-		return
-	}
-
-	user := models.SessionResponse{
-		ID:       int(claimsMap["id"].(float64)),
-		Username: claimsMap["username"].(string),
-		Email:    claimsMap["email"].(string),
-	}
-
-	c.JSON(http.StatusOK, gin.H{"user": user})
+	c.JSON(http.StatusOK, gin.H{"user": claims})
 }
