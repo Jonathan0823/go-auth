@@ -3,11 +3,9 @@ package auth
 import (
 	"go-auth/internal/models"
 	"net/http"
-	"strings"
-
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
-
 type authhandler struct {
 	svc AuthService
 }
@@ -57,19 +55,24 @@ func (h *authhandler) Login(c *gin.Context) {
 }
 
 func (h *authhandler) Session(c *gin.Context) {
-	authHeader := c.GetHeader("Authorization")
-	if authHeader == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required"})
-		return
-	}
-	if !strings.HasPrefix(authHeader, "Bearer ") {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header must start with Bearer"})
-		return
-	}
-	claims, err := h.svc.ValidateJWT(strings.TrimPrefix(authHeader, "Bearer "))
-	if err != nil {
+
+	claims, exists := c.Get("claims")
+	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"claims": claims})
+
+	claimsMap, ok := claims.(jwt.MapClaims)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+
+	user := models.SessionResponse{
+		ID:       int(claimsMap["id"].(float64)),
+		Username: claimsMap["username"].(string),
+		Email:    claimsMap["email"].(string),
+	}
+
+	c.JSON(http.StatusOK, gin.H{"user": user})
 }
